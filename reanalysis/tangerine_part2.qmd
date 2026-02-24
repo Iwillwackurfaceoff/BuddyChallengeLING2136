@@ -4,7 +4,7 @@ format: html
 editor: visual
 ---
 
-## Reproducibility assessment
+# Reproducibility assessment
 
 # Introduction: quick summary of the paper
 
@@ -56,11 +56,11 @@ setwd(current_working_dir)
 
 ```
 
-## Experiment 1
+### Experiment 1
 
-### Preparation
+#### Preparation
 
-downloading data_written from their osf repository: https://osf.io/65f7w/overview and storing in the same folder as this quarto document
+Downloading data_written from their osf repository: https://osf.io/65f7w/overview and storing in the same folder as this quarto document
 
 ```{r preparing data}
 # loading the data file
@@ -98,7 +98,7 @@ data_ex1 <- aud_data_trimmed
 
 ```
 
-## Reproducing Table 3
+#### Reproducing Table 3
 
 ```{r}
 # mean RT for each condition
@@ -146,9 +146,9 @@ table_3
 
 ```
 
-## LME analysis
+#### LME Analysis
 
-the original data only has a column "condition" with all for combinations across distractor type and distractor relatedness. In their paper, however, the researchers report to have two fixed effects: distractor type and distractor relatedness Therefore, the data frame needs to be adjusted for the model to be able to know what to do
+The original data only has a column "condition" with all for combinations across distractor type and distractor relatedness. In their paper, however, the researchers report to have two fixed effects: distractor type and distractor relatedness Therefore, the data frame needs to be adjusted for the model to be able to know what to do
 
 ```{r}
 # changing data frame
@@ -214,7 +214,7 @@ plot(fitted(ex1_mdl_final), res1)
 
 ```
 
-## Our assessment based on the analytical reproduction:
+### Our assessment based on the analytical reproduction:
 
 In the paper, they say they are using the trmr package, but not specify which function. We wonder why they say upper AND lower 3\*sd, when the function has only upper bound. We cannot really tell from their write up in the paper.
 
