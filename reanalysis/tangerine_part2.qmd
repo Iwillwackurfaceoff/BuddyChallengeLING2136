@@ -102,7 +102,7 @@ data_ex1 <- aud_data_trimmed
 
 #### Reproducing Table 3
 
-```{r}
+```{r table 3}
 # mean RT for each condition
 
 mean_RT <- data_ex1 |>
@@ -152,7 +152,7 @@ table_3
 
 The original data only has a column "condition" with all for combinations across distractor type and distractor relatedness. In their paper, however, the researchers report to have two fixed effects: distractor type and distractor relatedness Therefore, the data frame needs to be adjusted for the model to be able to know what to do
 
-```{r}
+```{r analysis}
 # changing data frame
 data_adjusted_1 <- data_ex1 |>
   # creating a column for distractor type
