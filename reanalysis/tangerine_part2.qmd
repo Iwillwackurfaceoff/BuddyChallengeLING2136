@@ -10,25 +10,23 @@ editor: visual
 
 # Introduction: quick summary of the paper
 
-```         
 We tried to reproduce the analysis in Mascelloni et al.(2021) where they look into mediated phonological-semantic priming in spoken word production. Their paper aims to empirically explore the suggested lemma retrieval models. Three models have been suggested in the literature: serial (the person first gets the lemma and then the phonological form of the word), cascade (lemma and phonological form are activated at the same time) and interactive (same as cascade but with feedback loop and interactions). In order to test this, the paper uses a picture–word interference paradigm. They aim to test whether a mediated phonological semantic interference appears. An example of this would be activation of fog by priming cat (cat -> dog -> fog) Participants are shown pictures which they have to name and naming latencies are recorded in ms. Before presenting the picture, participants get exposed to a related or unrelated word (spoken in Experiment 1, written in Experiment 2).
 
 They analyze their data with a linear mixed effects model (the maximal one does not converge, so they reduce it). Their results of Experiment 1 give support for the cascaded model of lexical retrieval because they show an effect of mediated phonological-semantic priming, which could not happen with a serial model of lexical retrieval. Experiment 2 shows a semantic interference effects, but not of a mediated semantic effect.
 
 For our reproducibility assessment, we are going to look at Experiment 1. 
 
-Codebook:
-participant: Participant number
-pic: What picture was used that the participant had to name
-sound: The distractor that the participant heard before the pic was presented 
-condition: The combinations of distractor type and distractor relatedness (4 levels)
-run: We have no idea what they mean by this and the authors never specify it either 
-rt: Reaction time in ms
-accuracy: Whether the participant named the picture correctly or not (0=wrong; 1= correct)
-SOA: Time between when the auditory stimulus is presented and when the picture is shown (in ms)
-type: We add this column later which differentiates between distractor type being either categorical or mediated phonological-semantic
-relatedness: We add this column later, either the distractor is related or unrelated, in terms of the category, to the presented picture (e.g cat-dog; cat-coffee; cat-fog, etc)
-```
+####Codebook:
+*participant*: Participant number
+*pic*: What picture was used that the participant had to name
+*sound*: The distractor that the participant heard before the pic was presented 
+*condition*: The combinations of distractor type and distractor relatedness (4 levels)
+*run*: We have no idea what they mean by this and the authors never specify it either 
+*rt*: Reaction time in ms
+*accuracy*: Whether the participant named the picture correctly or not (0=wrong; 1= correct)
+*SOA*: Time between when the auditory stimulus is presented and when the picture is shown (in ms)
+*type*: We add this column later which differentiates between distractor type being either categorical or mediated phonological-semantic
+*relatedness*: We add this column later, either the distractor is related or unrelated, in terms of the category, to the presented picture (e.g cat-dog; cat-coffee; cat-fog, etc)
 
 ## 1- Analytical reproduction
 
@@ -142,8 +140,12 @@ table_3 <- tibble(Distractor_Type = condition,
        SD = SD)
 
 table_3
-# The mean rt for each condition if not the same as reported in the paper, for the Categorically related and unrelated mean rt, the differences are only minor (0.26 and 0.76 ms), for the mediated phonological-semantical related and unrelated distractor types, the differences are a bigger (1.33 and 0.77 ms).
-# The results reported for the sd cannot be reproduced at all. Differences between their and our results are around 70ms for all 4 categories.
+# The mean rt for each condition if not the same as reported in the paper, for 
+#the Categorically related and unrelated mean rt, the differences are only minor 
+#(0.26 and 0.76 ms), for the mediated phonological-semantical related and 
+#unrelated distractor types, the differences are a bigger (1.33 and 0.77 ms).
+# The results reported for the sd cannot be reproduced at all. Differences 
+#between their and our results are around 70ms for all 4 categories.
            
 
 ```
@@ -182,7 +184,9 @@ ex1_mdl_max <- lmer(rt ~ type * relatedness +
                       (1+type|participant)+(1+type|pic),
                     data = data_adjusted_1,
                     control = lmerControl(optimizer = "bobyqa"))
-# I only get the warning message "boundary (singular) fit: see help('isSingular')" - not really that it didn't converge
+# I only get the warning message 
+#"boundary (singular) fit: see help('isSingular')" - 
+#not really that it didn't converge
 
 # removing correlation between random slopes and intercepts
 ex1_mdl_less <- lmer(rt ~ type * relatedness +
@@ -212,7 +216,12 @@ qqline(res1)
 # Plot 3, residual plot
 plot(fitted(ex1_mdl_final), res1)
 
-# while they report, that the residuals did not violate normality assumptions, the visual assessment in this reanalysis shows a clear pattern in all three plots that indicated that the underlying data does not come from a normal distribution. The histogram is skewed, the line is clearly not straight and the dots in the third plot are not equally spread, but clustered in the lower left part of the plot.
+# while they report, that the residuals did not violate normality assumptions, 
+#the visual assessment in this reanalysis shows a clear pattern in all 
+#three plots that indicated that the underlying data does not come from a 
+#normal distribution. The histogram is skewed, the line is clearly not straight 
+#and the dots in the third plot are not equally spread, 
+#but clustered in the lower left part of the plot.
 
 ```
 
