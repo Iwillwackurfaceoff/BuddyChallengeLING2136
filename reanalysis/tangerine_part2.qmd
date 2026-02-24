@@ -50,11 +50,11 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load(rstudioapi, tidyverse, lme4, trimr)
 
 #If needed, here below is the possible way to set the working directory to where 
-#this file is stored
+#this file is stored (remove hashtags from lines 56 and 57)
 
 #Setting working directory 
-current_working_dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
-setwd(current_working_dir)
+#current_working_dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
+#setwd(current_working_dir)
 
 ```
 
