@@ -152,6 +152,7 @@ max_model_bayesian <- brm(
   iter = 2000, # Total steps per chain; more steps lead to more precise estimates, I believe i have tried 2000 with warmup 1000  first but didn't work so i raise the number up, i may be wrong :>, we can test it again with 2000 
   warmup = 1000, 
   seed = 42,
+  thin = 1 # I added this now (18:50)
   cores = 4        
 )
 
@@ -186,7 +187,8 @@ max_model_bayesian <- brm(
   family = gaussian(),
   chains = 4,
   iter = 2000,
-  warmup = 1000, 
+  warmup = 1000,
+  thin = 1 # I added this now (18:50)
   seed = 42,
   cores = 4        
 )
