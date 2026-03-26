@@ -24,7 +24,7 @@ run_if_not_knitting <- function(expr) {
 #they will be installed, if yes, they will be loaded
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(rstudioapi, tidyverse, bayesrules,
-               tidybayes, trimr, brms, bayesplot, bayestestR, modelr)
+               tidybayes, trimr, brms, bayesplot, bayestestR, modelr, lme4)
 
 # set the current working directory to the one where this file is
 run_if_not_knitting(current_working_dir <- 
@@ -90,15 +90,15 @@ contrasts(aud$distractor_relatedness) <- c(0.5, -0.5)
 ```{r, Closest equivalent of Mascelloni et al}
 
 # Copy pasting the Mascelloni et al maximal model that did NOT converge
-lmer.exp1 <- lmer(rt ~ distractor_type * distractor_relatedness + 
-                    (1 + distractor_type.num *
-                       distractor_relatedness.num | participant) + 
-                    (1 + distractor_type.num *
-                       distractor_relatedness.num | pic) + 
-                    (1 + distractor_relatedness.num | distractor_word), 
-                  data=exp1_trimmedData, 
-                  control=lmerControl(optimizer="bobyqa"), 
-                  verbose=2)
+# lmer.exp1 <- lmer(rt ~ distractor_type * distractor_relatedness + 
+                   # (1 + distractor_type.num *
+                    #   distractor_relatedness.num | participant) + 
+                  #  (1 + distractor_type.num *
+                   #    distractor_relatedness.num | pic) + 
+                  #  (1 + distractor_relatedness.num | distractor_word), 
+                  # data=exp1_trimmedData, 
+                  # control=lmerControl(optimizer="bobyqa"), 
+                  # verbose=2)
 
 # Getting our priors
 maximal <- bf(rt ~ distractor_type * distractor_relatedness + 
