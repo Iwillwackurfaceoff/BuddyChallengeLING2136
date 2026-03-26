@@ -1,5 +1,5 @@
 ---
-title: "Tangerine_part4"
+title: "Tangerine_part4_Bayesian_analysis"
 author: "Tangerine"
 format: html
 editor: visual
@@ -27,7 +27,8 @@ pacman::p_load(rstudioapi, tidyverse, bayesrules,
                tidybayes, trimr, brms, bayesplot, bayestestR, modelr)
 
 # set the current working directory to the one where this file is
-run_if_not_knitting(current_working_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
+run_if_not_knitting(current_working_dir <- 
+                      dirname(rstudioapi::getActiveDocumentContext()$path))
 run_if_not_knitting(setwd(current_working_dir))
 
 # options to increase efficiency of brms models (optional)
@@ -61,7 +62,7 @@ aud  <-  aud_raw |>
   select(-sound) |>
   # creating categories needed for the model
   mutate(distractor_type = case_when(condition == "category" ~ "Categorical",
-                                     condition == "unrelated_cat" ~ "Categorical",
+                                     condition == "unrelated_cat"~"Categorical",
                                      condition == "mediated" ~ "Mediated",
                                      condition == "unrelated_med" ~ "Mediated"),
          # creating a column for distractor relatedness
@@ -90,8 +91,10 @@ contrasts(aud$distractor_relatedness) <- c(0.5, -0.5)
 
 # Copy pasting the Mascelloni et al maximal model that did NOT converge
 lmer.exp1 <- lmer(rt ~ distractor_type * distractor_relatedness + 
-                    (1 + distractor_type.num * distractor_relatedness.num | participant) + 
-                    (1 + distractor_type.num * distractor_relatedness.num | pic) + 
+                    (1 + distractor_type.num *
+                       distractor_relatedness.num | participant) + 
+                    (1 + distractor_type.num *
+                       distractor_relatedness.num | pic) + 
                     (1 + distractor_relatedness.num | distractor_word), 
                   data=exp1_trimmedData, 
                   control=lmerControl(optimizer="bobyqa"), 
@@ -99,8 +102,10 @@ lmer.exp1 <- lmer(rt ~ distractor_type * distractor_relatedness +
 
 # Getting our priors
 maximal <- bf(rt ~ distractor_type * distractor_relatedness + 
-                    (1 + distractor_type * distractor_relatedness | participant) + 
-                    (1 + distractor_type * distractor_relatedness | pic) + 
+                    (1 + distractor_type * 
+                       distractor_relatedness | participant) + 
+                    (1 + distractor_type * 
+                       distractor_relatedness | pic) + 
                     (1 + distractor_relatedness | distractor_word))
 
 get_prior(maximal, aud, family = "gaussian")
@@ -153,7 +158,9 @@ flat_model_bayesian
 # probability of direction
 p_direction(flat_model_bayesian)
 
-# computing p-value out of pd of direction so we can compare it to the original paper (we are aware that we are not actually using flat priors and the values we get therefore cant actually be trusted for comparison)
+# computing p-value out of pd of direction so we can compare it to the original 
+# paper (we are aware that we are not actually using flat priors and the values 
+# we get therefore cant actually be trusted for comparison)
 
 # p-value for b_distractor_type1
 pd_to_p(pd = 0.8688, direction = 'two-sided') 
@@ -168,7 +175,10 @@ pd_to_p(pd = 0.7502, direction = 'two-sided')
 # p-value: 0.4996
 
 
-# In the original analysis with the reduced model, they report p-values of 0.252 for distractor type, 0.001 for relatedness and 0.428 for the interaction term. These values are quite similar to what we got and we get the exact same "significance" which is only relatedness.
+# In the original analysis with the reduced model, they report p-values of 0.252
+# for distractor type, 0.001 for relatedness and 0.428 for the interaction term.
+# These values are quite similar to what we got and we get the exact same
+# "significance" which is only relatedness.
 
 ```
 
@@ -183,9 +193,12 @@ plot_normal(718, 220)
 # Setting weakly informative priors, taken from the normal ploting we just did
 #and from R's "get_priors"'s "advice"
 weak_priors <- c(prior(normal(718, 220), class = "Intercept"),
-                 prior(normal(0, 220), class = "b", coef = "distractor_relatedness1"),
-              prior(normal(0, 220), class = "b", coef = "distractor_type1"),
-              prior(normal(0, 220), class = "b", coef = "distractor_type1:distractor_relatedness1"),
+                 prior(normal(0, 220), class = "b",
+                       coef = "distractor_relatedness1"),
+              prior(normal(0, 220), class = "b",
+                    coef = "distractor_type1"),
+              prior(normal(0, 220), class = "b",
+                    coef = "distractor_type1:distractor_relatedness1"),
               prior(lkj(1), class = 'cor'),
               prior(cauchy(0, 3), class = 'sd', group = 'distractor_word'),
               prior(cauchy(0, 3), class = 'sd', group = 'participant'),
