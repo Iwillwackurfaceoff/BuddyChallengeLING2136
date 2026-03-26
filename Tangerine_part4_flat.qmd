@@ -246,48 +246,21 @@ summary(proper_model)
 # while for distractor type mediated, the average reaction time is 759 ms.
 # For distractor type related, the average rt is 
 
-library(emmeans)
-emmeans(aud, )
-
-spread_draws(proper_model, )
-
-gather_draws(model_sqrt, b_Phon1, b_Sem1,`b_Phon1:Sem1`) |>
-  ggplot(aes(x = .value)) +
-  geom_density(fill = "steelblue", alpha = 0.5) +
-  facet_wrap(~ .variable, scales = "free") +
-  labs(
-    x = "Posterior slope values",
-    y = "Density",
-    title = "Posterior distributions"
-  )
-
-
-
-
-model_sim |>
-  # Note: backticks around the interaction name
-  spread_draws(b_Phon1, b_Sem1, b_Phon1:Sem1) |>
-  # immediately rename the interaction to something syntactic
-  rename(b_Phon1_Sem1 = "b_Phon1:Sem1") |>
-  mutate(
-    # full marginal effects on the Distance scale
-    Phon_Diff   = 2 * b_Phon1,        # Different − Similar (Phon), averaged over Sem
-    Sem_Diff    = 2 * b_Sem1,         # Different − Similar (Sem), averaged over Phon
-    Interaction = 4 * b_Phon1_Sem1    # (SS − SD) − (DS − DD)
-  ) |>
-  select(Phon_Diff, Sem_Diff, Interaction) |>
-  pivot_longer(
-    cols      = everything(),
-    names_to  = "Effect",
-    values_to = "Difference"
-  ) |>
-  ggplot(aes(x = Difference, fill = Effect)) +
-  geom_density(alpha = 0.6) +
-  facet_wrap(~ Effect, scales = "free") +
-  labs(x = "Effect size (on Distance scale)", y = "Posterior density")
+proper_model |> 
+  gather_draws(b_distractor_relatedness1, b_distractor_type1, `b_distractor_type1:distractor_relatedness1`) |> 
+  # plot
+  ggplot(aes(x = .value,
+             y = .variable)) +
+    stat_halfeye() +
+    geom_vline(xintercept = 0,
+               lty = "dashed") +
+  labs(x = "posterior estimate for reaction times",
+       y = "") +
+  theme_minimal()
 
 
 p_direction(proper_model)
+
 
 ```
 
