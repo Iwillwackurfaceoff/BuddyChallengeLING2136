@@ -9,14 +9,11 @@ editor: visual
 
 TASK, DELETE LATER:
 
-Define the smallest effect size of interest for the original research question and do a literature research to justify your choice. 
+Define the smallest effect size of interest for the original research question and do a literature research to justify your choice.
 
 rerun your hypothesis test combining the concepts of Bayes Factor (BF) and Regions of Practical Equivalence (ROPE) (according to Roettger & Franke's method, 2025)
 
-run a sensitivity analyses for different ROPES and priors;
-write up the results accordingly.
-save the analysis and report in your Github repository
-Each buddy group leader additionally submits their report as a markdown (.qmd) and knitted pdf file here. 
+run a sensitivity analyses for different ROPES and priors; write up the results accordingly. save the analysis and report in your Github repository Each buddy group leader additionally submits their report as a markdown (.qmd) and knitted pdf file here.
 
 Naming convention for files: groupname_part5
 
@@ -103,10 +100,9 @@ contrasts(aud$distractor_relatedness) <- c(0.5, -0.5)
 
 ## Smallest effect size of interest
 
-We focus our buddy challenge on Experiment 1 from Mascelloni et al. (2021). The original specific research question that we focused on for this assignment was whether a mediated semantic interference effect could be shown using a picture naming methodology. As an example of what this means, it would be participants being slower (taking more miliseconds) at naming the picture of a bat after being exposed to the prime "dog" due to the interference created by the potentially mediated activated word "cat". The overarching big picture research question is whether a cascade model of lexical retrieval is more correct than a sequential model. 
+We focus our buddy challenge on Experiment 1 from Mascelloni et al. (2021). The original specific research question that we focused on for this assignment was whether a mediated semantic interference effect could be shown using a picture naming methodology. As an example of what this means, it would be participants being slower (taking more milliseconds) at naming the picture of a bat after being exposed to the prime "dog" due to the interference created by the potentially mediated activated word "cat". The overarching big picture research question is whether a cascade model of lexical retrieval is more correct than a sequential model.
 
-Establishing a SESOI has been challenging. In our case, we need to agree on the number of ms that we would find convincing as a difference between conditions, beyond pure chance or measurement error. In order to do so, we looked at the literature on mediated phonological-semantic priming to try to find meta-analysis that would give us an idea of what size we would consider meaningful. We unfortunately found no such meta-analysis. The closest we could find was a book chapter by Kerr et al. (in press). However, said chapter does not provide anything that would give us any help choosing a SESOI. The closest we find to putting things into number is "lexical processing around 175ms and phonological form
-encoding some 100ms later around 250-300ms" (Kerr et al., in press:19). Given that the range given for the phonological encoding varies by 50 ms, this is potentially the closest we get to something resembling a number of ms to have as a meaningful difference. 
+Establishing a SESOI has been challenging. In our case, we need to agree on the number of ms that we would find convincing as a difference between conditions, beyond pure chance or measurement error. In order to do so, we looked at the literature on mediated phonological-semantic priming to try to find meta-analysis that would give us an idea of what size we would consider meaningful. We unfortunately found no such meta-analysis. The closest we could find was a book chapter by Kerr et al. (in press). However, said chapter does not provide anything that would give us any help choosing a SESOI. The closest we find to putting things into number is "lexical processing around 175ms and phonological form encoding some 100ms later around 250-300ms" (Kerr et al., in press:19). Given that the range given for the phonological encoding varies by 50 ms, this is potentially the closest we get to something resembling a number of ms to have as a meaningful difference.
 
 We tried to look at the measurement error of the equipment itself to give us a pointer towards what we could consider a SESOI. The program used in Mascelloni et al. (2021) to quantify the reaction times is Chronset (Roux et al., 2017). We were unable to find any reported measurement error of that software.
 
@@ -123,21 +119,21 @@ model <- bf(rt ~ distractor_type * distractor_relatedness +
                     (1 + distractor_type * distractor_relatedness | pic) + 
                     (1 + distractor_relatedness | distractor_word))
 
-get_prior(maximal, aud, family = "gaussian")
+get_prior(model, aud, family = "gaussian")
 
 weak_priors <- c(prior(normal(718, 220), class = "Intercept"),
                  prior(normal(0, 220), class = "b", coef = "distractor_relatedness1"),
               prior(normal(0, 220), class = "b", coef = "distractor_type1"),
               prior(normal(0, 220), class = "b", coef = "distractor_type1:distractor_relatedness1"),
               prior(lkj(1), class = 'cor'),
-              prior(cauchy(0, 3), class = 'sd', group = 'distractor_word'),
-              prior(cauchy(0, 3), class = 'sd', group = 'participant'),
-              prior(cauchy(0, 3), class = 'sd', group = 'pic'),
+              # changing the parameter of the sd-priors from 3 to 300
+              prior(cauchy(0, 300), class = 'sd', group = 'distractor_word'),
+              prior(cauchy(0, 300), class = 'sd', group = 'participant'),
+              prior(cauchy(0, 300), class = 'sd', group = 'pic'),
               prior(normal(0, 138), class = "sigma"))
               
-
 proper_model <- brm(
-  formula = maximal,
+  formula = model,
   data = aud,
   prior = weak_priors,
   family = gaussian(),
@@ -148,16 +144,269 @@ proper_model <- brm(
   seed = 42,
   cores = 4        
 )
+# looking at model output
+proper_model
+# chaning the sd-priors had a big influence on the 95% confidence interval of the
+# intercept, which now is [701.77, 803.42]. It increased arroud 12ms compared to
+# the previous model [709.81, 799.08]. However, the mean of the estimate didn't
+# change much, only 0.78 ms. For the distractor type, the estimate changes only 
+# 0.32ms, the 95% CI changed from [-7.42, 27.92] to [-7.33, 29.52]. The change does
+# not lead to differnt signs and is quite small compared to the change foundin the
+# other coefficiant, distractor relatedness where it now is [7.95, 32.41] compared
+# to the previos 95% CI of [10.67, 30.34]. The interaction is affected the most
+where the interval increased from [-27.12, 11.64] to [-30.12, 14.10].
 
 
+# using our SESOI to define our ROPEs
+rope <- c(-50,50)
+bf_rope_type <- bayesfactor_rope(posterior = proper_model,
+                 null = rope,
+                 parameter = 'b_distractor_type1')
+bf_rope_type
+bf_rope_related <- bayesfactor_rope(posterior = proper_model,
+                 null = rope,
+                 parameter = 'b_distractor_relatedness1')
+bf_rope_related
+bf_rope_inter <- bayesfactor_rope(posterior = proper_model,
+                 null = rope,
+                 parameter = 'b_distractor_type1:distractor_relatedness1')
+bf_rope_inter
 
+# even when setting a seed, the outouts of the bayesfactor_rope() function changes 
+# Our results where the following numbers:
+# type 0.00000807
+# relatedness 0.0000578
+# interaction 0.0000507
 ```
 
 ## Run a sensitivity analyses for different ROPES and priors
 
-```{r, sensitivity analyses}
+```{r, sensitivity analyses - different priors}
+
+# setting priors that are half as wide as our original priors
+priors_110 <- c(prior(normal(718, 220), class = "Intercept"),
+                 prior(normal(0, 110), class = "b", coef = "distractor_relatedness1"),
+              prior(normal(0, 110), class = "b", coef = "distractor_type1"),
+              prior(normal(0, 110), class = "b", coef = "distractor_type1:distractor_relatedness1"),
+              prior(lkj(1), class = 'cor'),
+              # changing the parameter of the sd-priors from 3 to 300
+              prior(cauchy(0, 300), class = 'sd', group = 'distractor_word'),
+              prior(cauchy(0, 300), class = 'sd', group = 'participant'),
+              prior(cauchy(0, 300), class = 'sd', group = 'pic'),
+              prior(normal(0, 138), class = "sigma"))
+# running model with new priors
+narrow_model <- brm(
+  formula = model,
+  data = aud,
+  prior = priors_110,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  thin = 1, 
+  seed = 42,
+  cores = 4        
+)
+
+# re-running our BF with same rope as previously ROPEs
+bf_rope_type_110 <- bayesfactor_rope(posterior = narrow_model,
+                 null = rope,
+                 parameter = 'b_distractor_type1')
+
+bf_rope_related_110 <- bayesfactor_rope(posterior = narrow_model,
+                 null = rope,
+                 parameter = 'b_distractor_relatedness1')
+
+bf_rope_inter_110 <- bayesfactor_rope(posterior = narrow_model,
+                 null = rope,
+                 parameter = 'b_distractor_type1:distractor_relatedness1')
+bf_rope_type_110
+bf_rope_related_110
+bf_rope_inter_110
+# our results
+# type 0.0000245
+# relatedness 0.0000420
+# interaction 0.000182
 
 
+# setting priors that are twice as wide as our original priors
+priors_440 <- c(prior(normal(718, 220), class = "Intercept"),
+                 prior(normal(0, 440), class = "b", coef = "distractor_relatedness1"),
+              prior(normal(0, 440), class = "b", coef = "distractor_type1"),
+              prior(normal(0, 440), class = "b", coef = "distractor_type1:distractor_relatedness1"),
+              prior(lkj(1), class = 'cor'),
+              # changing the parameter of the sd-priors from 3 to 300
+              prior(cauchy(0, 300), class = 'sd', group = 'distractor_word'),
+              prior(cauchy(0, 300), class = 'sd', group = 'participant'),
+              prior(cauchy(0, 300), class = 'sd', group = 'pic'),
+              prior(normal(0, 138), class = "sigma"))
+# running model with new priors
+wide_model <- brm(
+  formula = model,
+  data = aud,
+  prior = priors_440,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  warmup = 1000,
+  thin = 1, 
+  seed = 42,
+  cores = 4        
+)
+# re-running our BF with same rope as previously ROPEs
+bf_rope_type_440 <- bayesfactor_rope(posterior = wide_model,
+                 null = rope,
+                 parameter = 'b_distractor_type1')
+
+bf_rope_related_440 <- bayesfactor_rope(posterior = wide_model,
+                 null = rope,
+                 parameter = 'b_distractor_relatedness1')
+
+bf_rope_inter_440 <- bayesfactor_rope(posterior = wide_model,
+                 null = rope,
+                 parameter = 'b_distractor_type1:distractor_relatedness1')
+bf_rope_type_440
+bf_rope_related_440
+bf_rope_inter_440
+# our results
+# type 0.0000120
+# relatedness 0.0000157
+# interaction 0.0000994
+```
+
+```{r, sensitivity analyses - smaller rope}
+# rerunning the three different models with smaller rope
+rope25 <- c(-25,25)
+# As we dont have a very good reason, other than this number being the best we
+# could find in the literature, foo setting our ropes at [-50, 50], we decided to
+# look at how the BF is changing for the three model if our ROPE is just halt the 
+# size.
+# narrow priors model
+bf_rope25_type_110 <- bayesfactor_rope(posterior = narrow_model,
+                 null = rope25,
+                 parameter = 'b_distractor_type1')
+
+bf_rope25_related_110 <- bayesfactor_rope(posterior = narrow_model,
+                 null = rope25,
+                 parameter = 'b_distractor_relatedness1')
+
+bf_rope25_inter_110 <- bayesfactor_rope(posterior = narrow_model,
+                 null = rope25,
+                 parameter = 'b_distractor_type1:distractor_relatedness1')
+bf_rope25_type_110
+bf_rope25_related_110
+bf_rope25_inter_110
+# our results - rope = 25, narrow priors model
+# type 0.016
+# relatedness 0.063
+# interaction 0.014
+
+# original model
+bf_rope25_type <- bayesfactor_rope(posterior = proper_model,
+                 null = rope25,
+                 parameter = 'b_distractor_type1')
+
+bf_rope25_related <- bayesfactor_rope(posterior = proper_model,
+                 null = rope25,
+                 parameter = 'b_distractor_relatedness1')
+
+bf_rope25_inter <- bayesfactor_rope(posterior = proper_model,
+                 null = rope25,
+                 parameter = 'b_distractor_type1:distractor_relatedness1')
+bf_rope25_type
+bf_rope25_related
+bf_rope25_inter
+# our results - rope = 25, original model
+# type 0.007
+# relatedness 0.027
+# interaction 0.008
+
+# wide priors model
+bf_rope25_type_440 <- bayesfactor_rope(posterior = wide_model,
+                 null = rope25,
+                 parameter = 'b_distractor_type1')
+
+bf_rope25_related_440 <- bayesfactor_rope(posterior = wide_model,
+                 null = rope25,
+                 parameter = 'b_distractor_relatedness1')
+
+bf_rope25_inter_440 <- bayesfactor_rope(posterior = wide_model,
+                 null = rope25,
+                 parameter = 'b_distractor_type1:distractor_relatedness1')
+bf_rope25_type_440
+bf_rope25_related_440
+bf_rope25_inter_440
+# our results - rope = 25, wide priors model
+# type 
+# relatedness 
+# interaction 
+```
+
+```{r, sensitivity analyses - "in between" rope}
+# rerunning the three different models with rope that's in between our original 
+# [-50,50] and the previous [-25,25]
+rope37.5 <- c(-37.5,37.5)
+# For our third ROPE we decided to go with the middle between the large and small
+# interval used before. 
+# narrow priors model
+bf_rope37.5_type_110 <- bayesfactor_rope(posterior = narrow_model,
+                 null = rope37.5,
+                 parameter = 'b_distractor_type1')
+
+bf_rope37.5_related_110 <- bayesfactor_rope(posterior = narrow_model,
+                 null = rope37.5,
+                 parameter = 'b_distractor_relatedness1')
+
+bf_rope37.5_inter_110 <- bayesfactor_rope(posterior = narrow_model,
+                 null = rope37.5,
+                 parameter = 'b_distractor_type1:distractor_relatedness1')
+bf_rope37.5_type_110
+bf_rope37.5_related_110
+bf_rope37.5_inter_110
+# our results - rope = 25, narrow priors model
+# type 0.016
+# relatedness 0.063
+# interaction 0.014
+
+# original model
+bf_rope25_type <- bayesfactor_rope(posterior = proper_model,
+                 null = rope25,
+                 parameter = 'b_distractor_type1')
+
+bf_rope25_related <- bayesfactor_rope(posterior = proper_model,
+                 null = rope25,
+                 parameter = 'b_distractor_relatedness1')
+
+bf_rope25_inter <- bayesfactor_rope(posterior = proper_model,
+                 null = rope25,
+                 parameter = 'b_distractor_type1:distractor_relatedness1')
+bf_rope25_type
+bf_rope25_related
+bf_rope25_inter
+# our results - rope = 25, original model
+# type 0.007
+# relatedness 0.027
+# interaction 0.008
+
+# wide priors model
+bf_rope25_type_440 <- bayesfactor_rope(posterior = wide_model,
+                 null = rope25,
+                 parameter = 'b_distractor_type1')
+
+bf_rope25_related_440 <- bayesfactor_rope(posterior = wide_model,
+                 null = rope25,
+                 parameter = 'b_distractor_relatedness1')
+
+bf_rope25_inter_440 <- bayesfactor_rope(posterior = wide_model,
+                 null = rope25,
+                 parameter = 'b_distractor_type1:distractor_relatedness1')
+bf_rope25_type_440
+bf_rope25_related_440
+bf_rope25_inter_440
+# our results - rope = 25, wide priors model
+# type 
+# relatedness 
+# interaction 
 ```
 
 ## Interpreting the results
